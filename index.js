@@ -3,29 +3,22 @@ const express = require("express");
 const app = express();
 app.use(express.json()); //parse every json
 
-let userList = [
-  {
-    id: 1,
-    name: "Pedro",
-    age: 19,
-    married: false,
-  },
-  {
-    id: 2,
-    name: "Paulo",
-    age: 20,
-    married: false,
-  },
-  {
-    id: 3,
-    name: "Jennifer",
-    age: 28,
-    married: true,
-  },
-];
+const mysql = require("mysql");
+const db = mysql.createConnection({
+  user: "root",
+  host: "localhost",
+  //password: "",
+  database: "userdb",
+});
 
 app.get("/users", (req, res) => {
-  res.json(userList);
+  db.query("SELECT * FROM users;", (err, result) => {
+    if (err) {
+      res.status(400).json(err);
+    } else {
+      res.status(200).json(result);
+    }
+  });
 });
 
 app.post("/users", (req, res) => {
@@ -42,6 +35,26 @@ app.put("/users", (req, res) => {
     userList[i].name = newName;
   }
   res.json(userList);
+});
+
+app.delete("/users/:id", (req, res) => {
+  //get id
+  //delete the user with id
+  //return list
+  const id = req.params.id;
+  let foundId = false;
+  for (let i = 0; i < userList.length; i++) {
+    if (userList[i].id == id) {
+      userList.splice(i, 1);
+      foundId = true;
+    }
+  }
+
+  if (!foundId) {
+    res.status(404).json({ error: "user id not found" });
+  } else {
+    res.json(userList);
+  }
 });
 
 app.listen("3001", () => {
