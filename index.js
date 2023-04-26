@@ -1,20 +1,31 @@
+require("dotenv").config();
 const express = require("express");
 
 const app = express();
+const mysql = require("mysql");
+
+const pswd = process.env.pswd;
+
+const db = mysql.createPool({
+  connectionLimit: 100,
+  host: "127.0.0.1", //This is your localhost IP
+  user: "root", // "newuser" created in Step 1(e)
+  password: pswd, // password for the new user --->>> Hide!
+  database: "userdb", // Database name
+  port: "3306", // port name, "3306" by default
+});
+
 app.use(express.json()); //parse every json
 
-const mysql = require("mysql");
-const db = mysql.createConnection({
-  user: "root",
-  host: "localhost",
-  //password: "",
-  database: "userdb",
+db.getConnection((err, connection) => {
+  if (err) throw err;
+  console.log("DB connected successful: " + connection.threadId);
 });
 
 app.get("/users", (req, res) => {
   db.query("SELECT * FROM users;", (err, result) => {
     if (err) {
-      res.status(400).json(err);
+      res.status(500).json(err);
     } else {
       res.status(200).json(result);
     }
@@ -22,39 +33,67 @@ app.get("/users", (req, res) => {
 });
 
 app.post("/users", (req, res) => {
-  //get data from client, update data in list
-  //return the new list
-  const newUser = req.body;
-  userList.push(newUser);
-  res.json(userList);
+  //const name = req.body.name;
+  //const age = req.body.age;
+  db.query(
+    "INSERT INTO users (name, age) VALUES ('steph', '19');",
+    //[name, age],
+    (err, result) => {
+      if (err) {
+        res.status(500).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    }
+  );
 });
 
 app.put("/users", (req, res) => {
-  const newName = req.body.newName;
-  for (let i = 0; i < userList.length; i++) {
-    userList[i].name = newName;
-  }
-  res.json(userList);
+  db.query(
+    "UPDATE users SET users.name = 'Stephen Curry' WHERE users.name = 'steph'",
+    //[names],
+    (err, result) => {
+      if (err) {
+        res.status(500).json(err);
+      } else {
+        res.status(200).json(result);
+      }
+    }
+  );
 });
 
-app.delete("/users/:id", (req, res) => {
-  //get id
-  //delete the user with id
-  //return list
-  const id = req.params.id;
-  let foundId = false;
-  for (let i = 0; i < userList.length; i++) {
-    if (userList[i].id == id) {
-      userList.splice(i, 1);
-      foundId = true;
+app.delete("/users", (req, res) => {
+  //const names = req.body.name;
+  db.query(
+    "DELETE FROM users WHERE users.name ='steph'",
+    //[names],
+    (err, result) => {
+      if (err) {
+        res.status(500).json(err);
+      } else {
+        res.status(200).json(result);
+      }
     }
-  }
+  );
+  /*
+  let sql = `DELETE FROM users WHERE name=` + names;
 
-  if (!foundId) {
-    res.status(404).json({ error: "user id not found" });
-  } else {
-    res.json(userList);
-  }
+  db.query(sql, (error, results, fields) => {
+    if (error) {
+      return console.error(error.message);
+    }
+    console.log(results);
+  });
+  */
+  /*
+  db.query(`DELETE FROM users WHERE name=` + names, (err, result) => {
+    if (err) {
+      res.status(500).json(err);
+    } else {
+      res.status(200).json(result);
+    }
+  });
+  */
 });
 
 app.listen("3001", () => {
