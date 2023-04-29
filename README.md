@@ -7,4 +7,4 @@ Implemented http methods: get, post, put, delete, created endpoints for each met
 Wanted to create a rest api using nodejs, express, and mysql.
 
 # Demo
-https://user-images.githubusercontent.com/72670350/235322547-97cd51ad-2bd4-4468-b019-545d0fc72096.mp4
+https://user-images.githubusercontent.com/72670350/235322625-a4666e02-643e-4137-8183-397190853caa.mp4
